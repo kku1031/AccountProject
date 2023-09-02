@@ -36,7 +36,7 @@ class AccountControllerTest {
     //잭슨 : Json -> Object, Object->Json 문자열로 상호간에 변환시켜줌.
     private ObjectMapper objectMapper;
 
-    //계좌 생성 API 성공 (파라미터 : 사용자 ID, 초기 잔액)
+    //계좌 생성 API(AccountController) 성공 (파라미터 : 사용자 ID, 초기 잔액)
     @Test
     void successCreateAccount() throws Exception {
         //AccountDto 값
