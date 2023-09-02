@@ -2,10 +2,9 @@ package com.example.AccountProject.controller;
 
 
 import com.example.AccountProject.domain.Account;
-import com.example.AccountProject.dto.AccountDto;
 import com.example.AccountProject.dto.CreateAccount;
 import com.example.AccountProject.service.AccountService;
-import com.example.AccountProject.service.RedisTestService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,8 +13,8 @@ import javax.validation.Valid;
 @RestController
 @RequiredArgsConstructor
 public class AccountController {
+
     private final AccountService accountService;
-    private final RedisTestService redisTestService;
 
     //계좌 생성 API(파라미터 : 사용자 ID, 초기 잔액)
     @PostMapping("/account")
@@ -30,13 +29,6 @@ public class AccountController {
             )
         );
     }
-
-    @GetMapping("/get-lock")
-    public String getLock() {
-        return redisTestService.getLock();
-    }
-
-
 
     @GetMapping("/account/{id}")
     public Account getAccount(

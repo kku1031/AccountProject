@@ -8,9 +8,9 @@ import java.time.LocalDateTime;
 
 public class CreateAccount {
 
-
     @Getter
     @Setter
+    @AllArgsConstructor
     public static class Request {
         //Valid 유효성 검사 지정.
         @NotNull //userId는 필수값
