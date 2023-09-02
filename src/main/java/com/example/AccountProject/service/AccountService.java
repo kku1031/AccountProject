@@ -32,10 +32,14 @@ public class AccountService {
      */
     @Transactional
     public AccountDto createAccount(Long userId, Long initialBalance) {
+
         //사용자 조회
         AccountUser accountUser = accountUserRepository.findById(userId)
                 //orElseThrow 값이 있으면 파라미터값 받아오고 없으면 Exception 발생.
                 .orElseThrow(() -> new AccountException(ErrorCode.USER_NOT_FOUND));
+
+        //계좌 개수 최대 5개 메소드 호출
+        validateCreateAccount(accountUser);
 
         //새로운 계좌 번호 생성
         String newAccountNumber = accountRepository.findFirstByOrderByIdDesc() //최근에 생성된 계좌
@@ -56,6 +60,14 @@ public class AccountService {
                         .build())
         );
     }
+
+    //계좌 개수 최대 5개로 제한
+    private void validateCreateAccount(AccountUser accountUser) {
+        if(accountRepository.countByAccountUser(accountUser) >= 5) {
+            throw new AccountException(ErrorCode.MAX_ACCOUNT_PER_USER_5);
+        }
+    }
+
 
     @Transactional
     public Account getAccount(Long id) {
