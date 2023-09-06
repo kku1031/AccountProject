@@ -3,6 +3,7 @@ package com.example.AccountProject.controller;
 
 import com.example.AccountProject.domain.Account;
 import com.example.AccountProject.dto.CreateAccount;
+import com.example.AccountProject.dto.DeleteAccount;
 import com.example.AccountProject.service.AccountService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,19 @@ public class AccountController {
                     request.getUserId(),
                     request.getInitialBalance()
             )
+        );
+    }
+
+    //계좌 해지 API(파라미터 : 사용자 ID, 계좌번호)
+    @DeleteMapping("/account")
+    public DeleteAccount.Response deleteAccount(
+            @RequestBody @Valid DeleteAccount.Request request
+    ) {
+        return DeleteAccount.Response.from(
+                accountService.deleteAccount(
+                        request.getUserId(),
+                        request.getAccountNumber()
+                )
         );
     }
 

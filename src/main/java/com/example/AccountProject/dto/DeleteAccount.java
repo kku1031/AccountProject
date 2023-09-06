@@ -3,41 +3,45 @@ package com.example.AccountProject.dto;
 import lombok.*;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
-public class CreateAccount {
-
+//계좌해지
+public class DeleteAccount {
     @Getter
     @Setter
+    @NoArgsConstructor
     @AllArgsConstructor
     public static class Request {
-        //Valid 유효성 검사 지정.
-        @NotNull //userId는 필수값
-        @Min(1)  //회원가입 후 0인 값은 없으니 1로 달아줌
+        @NotNull
+        @Min(1)
         private Long userId;
 
-        @NotNull
-        @Min(0) //초기 계좌잔액(100원 이상 필요) -> 계좌 해지(금액이 0원인 경우 처리를 위해 @Min(100)에서 @Min(0)으로 변경)
-        private Long initialBalance;
+        //해지 대상 계좌번호
+        //validation 강도 높음,@NotBlank 는 null 과 "" 과 " " 모두 허용 X
+        @NotBlank
+        //문자열 길이 확인
+        @Size(min = 10, max = 10)
+        private String accountNumber; //=> 계좌번호 : 10자리의 비지 않은 문자.
     }
 
     @Getter
     @Setter
     @NoArgsConstructor
-    @AllArgsConstructor //빌더가 들어간 객체를 상속 받을 때 ALL,NoArgsConstructor 써야 문제 없음
+    @AllArgsConstructor
     @Builder
     public static class Response {
         private Long userId;
         private String accountNumber;
-        private LocalDateTime registeredAt;
+        private LocalDateTime unRegisteredAt;
 
-        //@PostMapping("/account")에서 필요한 Response정보만 뽑아오기 위한 메소드.
         public static Response from(AccountDto accountDto) {
             return Response.builder()
                     .userId(accountDto.getUserId())
                     .accountNumber(accountDto.getAccountNumber())
-                    .registeredAt(accountDto.getRegisteredAt())
+                    .unRegisteredAt(accountDto.getUnRegisteredAt())
                     .build();
         }
     }

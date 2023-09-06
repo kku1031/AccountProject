@@ -7,6 +7,7 @@ import com.example.AccountProject.dto.AccountDto;
 import com.example.AccountProject.exception.AccountException;
 import com.example.AccountProject.repository.AccountRepository;
 import com.example.AccountProject.repository.AccountUserRepository;
+import com.example.AccountProject.type.AccountStatus;
 import com.example.AccountProject.type.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,10 +16,12 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 
 import static com.example.AccountProject.type.AccountStatus.IN_USE;
+import static com.example.AccountProject.type.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
 public class AccountService {
+
 
     private final AccountRepository accountRepository;
     private final AccountUserRepository accountUserRepository;
@@ -65,6 +68,38 @@ public class AccountService {
     private void validateCreateAccount(AccountUser accountUser) {
         if(accountRepository.countByAccountUser(accountUser) >= 5) {
             throw new AccountException(ErrorCode.MAX_ACCOUNT_PER_USER_5);
+        }
+    }
+
+    //계좌 해지 API
+    @Transactional
+    public AccountDto deleteAccount(Long userId, String accountNumber) {
+        AccountUser accountUser = accountUserRepository.findById(userId)                //유저 아이디 조회
+                .orElseThrow(() -> new AccountException(ErrorCode.USER_NOT_FOUND));     //사용자가 없을 때
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountException(ErrorCode.ACCOUNT_NOT_FOUND));  //계좌가 없을 때,
+        validateDeleteAccount(accountUser, account);
+
+        //계좌 해지 후 -> 상태 업데이트, 시간등록
+        account.setAccountStatus(AccountStatus.UNREGISTERED);
+        account.setUnRegisteredAt(LocalDateTime.now());
+
+        //없어도 동작 -> AccountServiceTest위해 작성.
+        accountRepository.save(account);
+
+        return AccountDto.fromEntity(account);
+    }
+
+    //계좌 해지가 불가능한 경우
+    private void validateDeleteAccount(AccountUser accountUser, Account account) {
+        if (accountUser.getId() != account.getAccountUser().getId()) {
+            throw new AccountException(USER_ACCOUNT_UN_MATCH);            //사용자 아이디, 계좌 소유주가 다른 경우
+        }
+        if (account.getAccountStatus() == AccountStatus.UNREGISTERED) {
+            throw new AccountException(ACCOUNT_ALREADY_UNREGISTERED);     //계좌가 이미 해지 상태인 경우
+        }
+        if (account.getBalance() > 0) {
+            throw new AccountException(BALANCE_NOT_EMPTY);                //잔액이 있는 경우 실패 응답
         }
     }
 
