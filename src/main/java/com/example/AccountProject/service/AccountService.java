@@ -9,11 +9,14 @@ import com.example.AccountProject.repository.AccountRepository;
 import com.example.AccountProject.repository.AccountUserRepository;
 import com.example.AccountProject.type.AccountStatus;
 import com.example.AccountProject.type.ErrorCode;
+import com.google.common.collect.FluentIterable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.example.AccountProject.type.AccountStatus.IN_USE;
 import static com.example.AccountProject.type.ErrorCode.*;
@@ -21,7 +24,6 @@ import static com.example.AccountProject.type.ErrorCode.*;
 @Service
 @RequiredArgsConstructor
 public class AccountService {
-
 
     private final AccountRepository accountRepository;
     private final AccountUserRepository accountUserRepository;
@@ -103,6 +105,20 @@ public class AccountService {
         }
     }
 
+    //계좌확인 API
+    @Transactional
+    public List<AccountDto> getAccountsByUserId(Long userId) {
+        AccountUser accountUser = accountUserRepository.findById(userId)
+                .orElseThrow(() -> new AccountException(USER_NOT_FOUND));
+
+        List<Account> accounts = accountRepository.findByAccountUser(accountUser);
+
+        //List<Account>를 List<AccountDto> 타입으로 변환.
+        return accounts.stream()
+                .map(AccountDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
 
     @Transactional
     public Account getAccount(Long id) {
@@ -111,4 +127,6 @@ public class AccountService {
         }
         return accountRepository.findById(id).get();
     }
+
+
 }
