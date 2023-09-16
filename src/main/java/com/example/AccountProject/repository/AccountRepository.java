@@ -5,6 +5,7 @@ import com.example.AccountProject.domain.AccountUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -17,4 +18,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     Integer countByAccountUser(AccountUser accountUser);
 
     Optional<Account> findByAccountNumber(String accountNumber);
+
+    //Account안에 accountUser를 연관관계로 가지고 있기 때문에 가능(JPA 기능)
+    List<Account> findByAccountUser(AccountUser accountUser);
 }

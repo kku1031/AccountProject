@@ -16,6 +16,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -268,4 +270,62 @@ class AccountServiceTest {
         // then: 어떤 결과가 나와야 함
         assertEquals(ErrorCode.BALANCE_NOT_EMPTY, exception.getErrorCode());
     }
+
+
+    //계좌확인 API 성공(파라미터 : ID)
+    @Test
+    void successGetAccountsByUserId() {
+        //given 어떤 데이터가 있을 때,
+        AccountUser user1 = AccountUser.builder()
+                .id(12L)
+                .name("강경구").build();
+        //가상 계좌 3개 생성
+        List<Account> accounts = Arrays.asList(
+                Account.builder()
+                        .accountUser(user1)
+                        .accountNumber("1111111111")
+                        .balance(1000L)
+                        .build(),
+                Account.builder()
+                        .accountUser(user1)
+                        .accountNumber("2222222222")
+                        .balance(2000L)
+                        .build(),
+                Account.builder()
+                        .accountUser(user1)
+                        .accountNumber("3333333333")
+                        .balance(3000L)
+                        .build()
+        );
+        given(accountUserRepository.findById(anyLong()))
+                .willReturn(Optional.of(user1));
+        given(accountRepository.findByAccountUser(any()))
+                .willReturn(accounts);
+        //when 어떤 동작을 하게 되면
+        List<AccountDto> accountDtos = accountService.getAccountsByUserId(1L);
+        //then 어떤 결과가 나와야한다
+        assertEquals(3, accountDtos.size());
+        assertEquals("1111111111",accountDtos.get(0).getAccountNumber());
+        assertEquals(1000,accountDtos.get(0).getBalance());
+        assertEquals("2222222222",accountDtos.get(1).getAccountNumber());
+        assertEquals(2000,accountDtos.get(1).getBalance());
+        assertEquals("3333333333",accountDtos.get(2).getAccountNumber());
+        assertEquals(3000,accountDtos.get(2).getBalance());
+    }
+
+    //계좌확인 API 실패(파라미터 : ID)
+    @Test
+    @DisplayName("계좌확인 - 유저 정보가 없을 때,")
+    void failedToGetAccounts() {
+        //given 어떤 데이터가 있을 때,
+        given(accountUserRepository.findById(anyLong()))
+                .willReturn(Optional.empty());
+        // when: 어떤 동작을 하게 되면
+        AccountException exception = assertThrows(AccountException.class,
+                () -> accountService.getAccountsByUserId(1L));
+
+        // then: 어떤 결과가 나와야 함
+        assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
+    }
+
 }
